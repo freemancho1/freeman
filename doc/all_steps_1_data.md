@@ -21,6 +21,8 @@
     train_x -= train_x.mean(axis=0)
     train_x /= train_x.std(axis=0)
     ```
+* 시험, 또는 서비스를 위한 데이터의 정규화는 훈련 데이터의 정규화 방식을 그대로 이용해야 함
+
 <br/><br/>
 
 ## 누락된 값 처리
