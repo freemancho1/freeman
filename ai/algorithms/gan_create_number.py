@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 from datetime import datetime
 
@@ -14,7 +15,7 @@ class NumberGenerator:
         llm.set(2)
         self.model = []
         (self.data, self.label), (_, _) = tf.keras.datasets.mnist.load_data()
-        self.epochs = 10000
+        self.epochs = 20000
         self.batch_size = 128
         self.latent_z_dim = 100
         self.num_display_log = 5
@@ -34,8 +35,13 @@ class NumberGenerator:
         print(f"훈련 시작: {start}")
         for i in range(10):
             print(f"숫자 {i} 훈련")
-            self.model.append(self.train(i))
+            model = self.train(i)
+            with open(f"/home/freeman/projects/data/models/gan_digit/model{i}.pkl", "wb") as f:
+                pickle.dump(model, f)
+            self.model.append(model)
         end = datetime.now()
+        with open(f"/home/freeman/projects/data/models/gan_digit/model_all.pkl", "wb") as f:
+            pickle.dump(self, f)
         print(f"훈련 종료: {end}, 전체 진행시간: {end-start}")
             
     def generator(self, *digits):
