@@ -14,7 +14,8 @@ from utils.date import eta
 class SimpleGAN:
     
     def __init__(self, data, epochs=10000, batch_size=128, latent_z_dim=50, num_display_log=10, tf_log_level=2):
-        SimpleGAN.init_env(tf_log_level)
+        llm.set(tf_log_level)
+        
         self.data = None
         self.data_size = None 
         self.input_shape = None
@@ -36,7 +37,7 @@ class SimpleGAN:
         data_dim = data.ndim
         if data_dim not in [3, 4]:
             raise TypeError(f"3 또는 4차원의 입력 데이터가 필요합니다. 입력된 데이터는 {data_dim} 차원 입니다.")
-        self.data = data / (data.max() / 2) - 1
+        self.data = data / 127.5 - 1
         if data_dim == 3:
             self.data = np.expand_dims(self.data, axis=3)
         self.data_size = len(self.data)
@@ -143,9 +144,5 @@ class SimpleGAN:
         latent_noise = np.random.normal(0, 1, (1, self.latent_z_dim))
         gen_image = self.generator.predict(latent_noise, verbose=0)
         gen_image = (gen_image + 1) * 127.5
-        return gen_image
-                
-    @staticmethod
-    def init_env(tf_log_level):
-        llm.set(tf_log_level)
+        return gen_image[0]
         

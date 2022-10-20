@@ -30,7 +30,7 @@ class NumberGenerator:
         gan.display_last_generation_images()
         return gan
             
-    def fit(self):
+    def fit_all(self):
         start = datetime.now()
         print(f"훈련 시작: {start}")
         for i in range(10):
@@ -43,18 +43,24 @@ class NumberGenerator:
         with open(f"/home/freeman/projects/data/models/gan_digit/model_all.pkl", "wb") as f:
             pickle.dump(self, f)
         print(f"훈련 종료: {end}, 전체 진행시간: {end-start}")
+        
+    def fit(self, digit):
+        print(f"숫자 {digit} 훈련")
+        model = self.train(digit)
+        with open(f"/home/freeman/projects/data/models/gan_digit/model{digit}.pkl", "wb") as f:
+            pickle.dump(model, f)
+        self.model.append(model)
             
     def generator(self, *digits):
         gen_images = []
         for digit in digits:
             gen_images.append(self.model[digit].create_number())
-            
+
         grid_rows = 1
         grid_cols = len(gen_images)
         fig, axs = plt.subplots(grid_rows, grid_cols, figsize=(grid_rows, grid_cols), sharey=True, sharex=True)
         display_idx = 0
-        for i in range(grid_rows):
-            for j in range(grid_cols):
-                axs[i,j].imshow(gen_images[display_idx, :, :, 0], cmap="gray")
-                axs[i,j].axis("off")
-                display_idx += 1
+        for i in range(grid_cols):
+            axs[i].imshow(gen_images[display_idx], cmap="gray")
+            axs[i].axis("off")
+            display_idx += 1
