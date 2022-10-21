@@ -1,0 +1,1 @@
+minmax = lambda x: (min(x), max(x))
