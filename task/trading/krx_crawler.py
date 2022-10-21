@@ -38,6 +38,7 @@ def get_crawling_period(s_date=None, e_date=None):
         p_second = today
     if p_second == today and not is_including_today():
         p_second -= timedelta(days=1)
+    log.debug(f"시작날자({p_first}), 종료날자({p_second})")
     
     return p_first, p_second  
 
