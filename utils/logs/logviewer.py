@@ -1,4 +1,4 @@
-#!/home/freeman/anaconda3/envs/trading_tf27p39/bin/python
+#!/usr/bin/python3.8
 import re, sys, time
 import threading
 from optparse import OptionParser

@@ -12,9 +12,13 @@ from freeman.task.trading.krx_crawler import KrxDataCrawler
 from freeman.utils.logs.log import Logger as log
 
 
-def krx_crawling():
-    last_crawling_date = parse(max(os.listdir(KRX_BACKUP_PATH))[:8]).date()
-    s_date = last_crawling_date + timedelta(days=1)
+def krx_crawling(start_date=0):
+    if start_date == 0:
+        last_crawling_date = parse(max(os.listdir(KRX_BACKUP_PATH))[:8]).date()
+        s_date = last_crawling_date + timedelta(days=1)
+    else:
+        last_crawling_date = parse(str(start_date)).date()
+        s_date = last_crawling_date
     crawler = KrxDataCrawler(s_date=s_date, e_date=None)
     crawler.start_crawling(is_display_processing_step=True)
     

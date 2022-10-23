@@ -27,6 +27,7 @@ KRX_BACKUP_PATH = os.path.join(KRX_CRAWLING_PATH, "backup")
 KRX_MERGE_PATH = os.path.join(KRX_CRAWLING_PATH, "merge")
 KRX_MERGE_FILE = "krx-merge.csv"
 KRX_MERGE_FILE_INFO = os.path.join(KRX_MERGE_PATH, KRX_MERGE_FILE)
+KRX_MERGE_1012_INFO = os.path.join(KRX_MERGE_PATH, "krx-merge-20221012.csv")
 KRX_COMPANY_FILE = "company_list.csv"
 KRX_COMPANY_FILE_INFO = os.path.join(KRX_MERGE_PATH, KRX_COMPANY_FILE)
 # KRX Trading Info
@@ -42,3 +43,6 @@ KRX_COMPANY_COLUMNS = [
     'code', 'short_code', 'name_kr', 'short_name_kr', 'name_en', 'listing_date',
     'type_market', 'type_stock', 'affiliated', 'category_stock', 'par_value', 'num_listed'
 ]
+
+# AI
+SPECIAL_COMPANY = '삼성전자'

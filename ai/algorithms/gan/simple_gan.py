@@ -1,10 +1,7 @@
 import numpy as np
-import tensorflow as tf
 import matplotlib.pyplot as plt
-import pickle
 
 from datetime import datetime
-from tensorflow.keras.datasets.mnist import load_data
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Dense, LeakyReLU, Reshape, Flatten
@@ -13,9 +10,29 @@ from freeman.utils.date import eta
 from freeman.utils.support_tf import LogLevelManager as llm
 
 
-class NumberGAN:
+""" 간단한 GAN 클래스
+3차원(None, rows, columns)과 4차원(None, rows, columns, channel) 데이터를 생성할 수 있다.
+사용법은 "freeman.task.number_generator"에서 숫자 이미지를 생성하는 모델을 연습했으니 참고하면 된다.
+
+Parameters:
+    data: 3차원 또는 4차원의 훈련 데이터,
+        훈련 데이터는 별도의 레이블이 필요없으며, 프로그램상에서 "진짜(1)"로 레이블을 붙임
+    epochs: 훈련 epoch 수
+    batch_size: 한번에 처리할 입력 데이터의 갯 수
+    latent_z_dim: 생성모델의 입력으로 사용할 노이즈 데이터의 노드 수
+    num_display_log: 로그 출력 횟 수(epochs / num_display_log = 로그를 출력할 epoch 번호)
+    tf_log_level: 텐서플로 로그 출력 레벨(2는 WARNING부터 출력함)
+
+Raises:
+    TypeError: 3차원 또는 4차원 이외의 차원 데이터가 입력으로 오면 발생함
+    RuntimeError: 모델이 훈련되지 않는 상태에서, 이미지를 생성하려고 할 때 발생하는 오류
+
+Returns:
+    클래스의 인스턴스
+"""
+class SimpleGAN:
     
-    def __init__(self, data, epochs=10000, batch_size=128, latent_z_dim=50, num_display_log=10, tf_log_level=2):
+    def __init__(self, data, epochs=20000, batch_size=128, latent_z_dim=100, num_display_log=10, tf_log_level=2):
         llm.set(tf_log_level)
         
         self.data = None
@@ -36,6 +53,17 @@ class NumberGAN:
         
     
     def preprocessing_data(self, data):
+        """입력데이터를 간단하게 전처리하고, 그 결과를 인스턴스 전역함수에 저장함
+        전처리 내용
+            - 차원이 3차원이면 4차원(None, rows, columns, channels)으로 변경함
+            - 데이터를 -1 ~ 1 사이의 값으로 정규화
+
+        Args:
+            data (ndarray): 판별모델이 학습할 진짜 이미지(레이블은 필요 없음)
+
+        Raises:
+            TypeError: 3차원 또는 4차원 이외의 차원 데이터가 입력으로 오면 발생함
+        """
         data_dim = data.ndim
         if data_dim not in [3, 4]:
             raise TypeError(f"3 또는 4차원의 입력 데이터가 필요합니다. 입력된 데이터는 {data_dim} 차원 입니다.")
@@ -97,7 +125,7 @@ class NumberGAN:
                 num_curr_loop = (epoch+1) // self.epochs_display_log
                 print(f"{epoch+1: >6}({num_curr_loop: >2}/{self.num_display_log}), "
                       f"[D loss: {d_loss:8.6f}, accuracy: {d_acc:8.6f}], "
-                      f"[G loss: {d_loss:8.6f}], "
+                      f"[G loss: {g_loss:8.6f}], "
                       f"Time[Curr: {end_loop-start_loop}, Total: {end_loop-start_train}, "
                       f"ETA: {eta(self.num_display_log-num_curr_loop, end_loop-start_loop)}]")
                 start_loop = end_loop
@@ -146,77 +174,4 @@ class NumberGAN:
         latent_noise = np.random.normal(0, 1, (1, self.latent_z_dim))
         gen_image = self.generator.predict(latent_noise, verbose=0)
         gen_image = (gen_image + 1) * 127.5
-        return gen_image[0]
-    
-    
-class NumberGenerator:
-    
-    def __init__(self, epochs=100, batch_size=128, latent_z_dim=50, num_display_log=10, tf_log_level=2):
-        llm.set(tf_log_level)
-        
-        self.epochs = epochs
-        self.digit_of_epochs = len(str(self.epochs))
-        self.batch_size = batch_size
-        self.latent_z_dim = latent_z_dim
-        self.num_display_log = num_display_log
-        self.tf_log_level = tf_log_level
-        
-        self.model = []
-        (self.data, self.label), (_, _) = load_data()
-        self.model_path_pk = "/home/freeman/projects/data/models/gan_digit/"
-        self.model_path_tf = "/home/freeman/projects/data/models/gan_digit_tf/"
-        
-    def train(self, digit):
-        train_x = self.data[np.where(self.label == digit)]
-        gan = NumberGAN(train_x, 
-                        epochs=self.epochs, batch_size=self.batch_size, 
-                        latent_z_dim=self.latent_z_dim, num_display_log=self.num_display_log,
-                        tf_log_level=self.tf_log_level)
-        gan.fit()
-        gan.display_last_generation_images()
-        return gan    
-
-    def fit_all(self):
-        start = datetime.now()
-        print(f"훈련 시작: {start}")
-        for i in range(10):
-            print(f"숫자 {i} 훈련")
-            model = self.train(i)
-            with open(f"/home/freeman/projects/data/models/gan_digit/model{i}.pkl", "wb") as f:
-                pickle.dump(model, f)
-            self.model.append(model)
-        end = datetime.now()
-        with open(f"/home/freeman/projects/data/models/gan_digit/model_all.pkl", "wb") as f:
-            pickle.dump(self, f)
-        print(f"훈련 종료: {end}, 전체 진행시간: {end-start}")
-        
-    def fit(self, digit):
-        print(f"숫자 {digit} 훈련")
-        model = self.train(digit)
-        with open(f"/home/freeman/projects/data/models/gan_digit/model{digit}.pkl", "wb") as f:
-            pickle.dump(model, f)
-        self.model.append(model)
-        
-    def _generator(self, *digits):
-        gen_images = []
-        for digit in digits:
-            gen_images.append(self.model[digit].create_number())
-
-        grid_rows = 1
-        grid_cols = len(gen_images)
-        _, axs = plt.subplots(grid_rows, grid_cols, figsize=(10, 10), sharey=True, sharex=True)
-        display_idx = 0
-        for i in range(grid_cols):
-            axs[i].imshow(gen_images[display_idx], cmap="gray")
-            axs[i].axis("off")
-            display_idx += 1
-            
-    def generator(self, *digits):
-        if self.model == []:
-            llm.set(self.tf_log_level)
-            for i in range(10):
-                with open(f"/home/freeman/projects/data/models/gan_digit/model{i}.pkl", "rb") as f:
-                    load_model = pickle.load(f)
-                    self.model.append(load_model)
-        self._generator(*digits)
-        
+        return gen_image[0]    
