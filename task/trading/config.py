@@ -43,6 +43,8 @@ KRX_COMPANY_COLUMNS = [
     'code', 'short_code', 'name_kr', 'short_name_kr', 'name_en', 'listing_date',
     'type_market', 'type_stock', 'affiliated', 'category_stock', 'par_value', 'num_listed'
 ]
+## 지표정보
+INDEXES_INFO_PATH = os.path.join(DATA_PATH, "indexes")
 
 # AI
 SPECIAL_COMPANY = '삼성전자'
