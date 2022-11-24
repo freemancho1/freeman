@@ -1,4 +1,5 @@
 tensorflow==2.7.4
+tensorflow-model-optimization
 pandas
 pandas_profiling
 scikit-learn
